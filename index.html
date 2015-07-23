@@ -1,0 +1,276 @@
+<!--
+Google IO 2012/2013 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+</head>
+<body style="opacity: 0">
+
+<slides class="layout-widescreen">
+
+  <!--
+  <slide class="logoslide nobackground">
+    <article class="flexbox vcenter">
+     continuationspan><img src="HHU_Logo.png"></span>
+    </article>
+    </slide> -->
+
+  <slide class="title-slide segue nobackground">
+    <aside class="gdbar"><img src="images/Firefox-logo.svg.png"></aside>
+    <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+    <hgroup class="auto-fadein">
+      <h1 data-config-title><!-- populated from slide_config.json --></h1>
+      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+      <p data-config-presenter><!-- populated from slide_config.json --></p>
+    </hgroup>
+  </slide>
+
+  <slide>
+  <aside class="gdbar right bottom"><img src="images/Firefox-logo.svg.png"></aside>
+  <hgroup>
+  <h2>What do we want?</h2>
+  </hgroup>
+  <article>
+    <center>
+      High-level, declarative traversals of collections
+      <center><code>map, forEach, fold, filter, ...</code></center>
+    </center>
+    <p>
+    <ul class="build">
+      <li>Typically parameterized over functions</li>
+      <li>Safe and concise ways to operate over containers</li>
+      <li>But is it fast?</li>
+    </ul>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Starting point</h2>
+  </hgroup>
+  <article class="smaller">
+    <table>
+      <tr>
+        <td width="95%" bgcolor="white">
+      <pre class="prettyprint" data-lang="javascript">
+function benchmark_slow(outer) {
+  outer.forEach(function (inner) {
+    inner.forEach(function (value) {
+      curMax = Math.max(value, curMax);
+    });
+  });
+}
+      </pre>
+      <span class="nocode">
+        </td>
+        <td bgcolor="white">
+          <div class="measurement">
+            <span class="button" id="arrayForEach">run</span><p>
+          </div>
+          <div class="measurement">
+            <span class="output" id="arrayForEach:time"></span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td width="95%" bgcolor="white">
+      <pre class="prettyprint" data-lang="javascript">
+function benchmark_fast(outer) {
+  for (var i = 0; i &lt; outer.length; i++) {
+    var inner = outer[i];
+    for (var j = 0; j &lt; inner.length; j++) {
+      var value = inner[j];
+      curMax = Math.max(value, curMax);
+    }
+  }
+}
+    </pre>
+        <td bgcolor="white">
+          <div class="measurement">
+            <span class="button" id="forLoop">run</span><p>
+          </div>
+          <div class="measurement">
+            <span class="output" id="forLoop:time"></span>
+          </div>
+        </td>
+        </td>
+      </tr>
+      </table>
+      <footer>Code taken from
+        <a href="http://rfrn.org/~shu/2013/03/20/two-reasons-functional-style-is-slow-in-spidermonkey.html">
+          http://rfrn.org/~shu/2013/03/20/two-reasons-functional-style-is-slow-in-spidermonkey.html
+        </a>
+      </footer>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>What's going on?</h2>
+  <h3>Polymorhic code make spider monkey angry</h3>
+  </hgroup>
+  <article class="flexbox vcenter">
+    <img src="images/happy-monkey.jpg" class="reflect" height=500 alt="Description" title="Happy Monkey">
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Polymorphism is expensive</h2>
+  </hgroup>
+  <article>
+    <pre class="prettyprint" data-lang="javascript">
+Array.protoype.forEach = function(<b>fun</b>) {
+  for (var i = 0; i &lt; this.length; i++)
+    <b>fun</b>(<b>this[i]</b>);
+}
+
+numbers.forEach(f);
+
+cats.forEach(f);
+dogs.forEach(g);
+strings.forEach(h);
+vectors.forEach(k);
+    </pre>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup><h2>Easy fix: duplicate the code</h2></hgroup>
+  <article class="medium">
+
+    <table>
+      <tr>
+        <td width="95%" bgcolor="white">
+      <pre class="prettyprint" data-lang="javascript">
+
+<b>
+Array.protoype.forEach2 = function(fun) {
+  for (var i = 0; i &lt; this.length; i++)
+    fun(this[i]);
+}
+</b>
+
+function benchmark_slow(outer) {
+  outer.<b>forEach</b>(function (inner) {
+    inner.<b>forEach2</b>(function (value) {
+      curMax = Math.max(value, curMax);
+    });
+  });
+}
+      </pre>
+      <span class="nocode">
+        </td>
+        <td bgcolor="white">
+          <div class="measurement">
+            <span class="button" id="arrayForEachDup">run</span><p>
+          </div>
+          <div class="measurement">
+            <span class="output" id="arrayForEachDup:time"></span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+  </article>
+  </slide>
+
+  <slide class="backdrop"></slide>
+
+</slides>
+
+<script>
+function benchmark(n, iters, f) {
+  var outer = [];
+  for (var i = 0; i < n; i++) {
+    var inner = [];
+    for (var j = 0; j < n; j++)
+      inner.push(Math.random() * 100)
+    outer.push(inner);
+  }
+  var start = Date.now();
+  for (var i = 0; i < iters; i++)
+    f(outer);
+  return Date.now() - start;
+}
+
+var benchs = [];
+
+benchs["forLoop"] = function forLoop(outer) {
+  var max = -Infinity;
+  for (var i = 0; i < outer.length; i++) {
+    var inner = outer[i];
+    for (var j = 0; j < inner.length; j++) {
+      var v = inner[j];
+      if (v > max)
+        max = v;
+    }
+  }
+};
+
+benchs["arrayForEach"] = function arrayForEach(outer) {
+  var max = -Infinity;
+  outer.forEach(function (inner) {
+    inner.forEach(function (v) {
+      if (v > max)
+        max = v;
+    });
+  });
+};
+
+benchs["arrayForEachDup"] = function arrayForEachDup(outer) {
+  var max = -Infinity;
+  outer.myForEach(function (inner) {
+    inner.myForEach2(function (v) {
+      if (v > max)
+        max = v;
+    });
+  });
+};
+
+Array.prototype.myForEach = function (f) {
+  for (var i = 0; i < this.length; i++)
+    f(this[i]);
+}
+
+Array.prototype.myForEach2 = function (f) {
+  for (var i = 0; i < this.length; i++)
+    f(this[i]);
+}
+
+var runButtons = document.getElementsByClassName("button");
+for (var i = 0; i < runButtons.length; i++) {
+  var button = runButtons[i];
+  button.onclick = function() {
+     var time = benchmark(50, 50000, benchs[this.id]);
+     document.getElementById(this.id + ":time").innerHTML = time + " ms";
+  };
+}
+</script>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
+
+
