@@ -193,6 +193,20 @@ function benchmark_slow(outer) {
   </article>
   </slide>
 
+  <slide>
+  <hgroup>
+  <h2>That's dumb</h2>
+  <h3>Why does it work?</h3>
+  </hgroup>
+  <article>
+    <ul>
+      <li>IonMonkey cannot inline functions which "appear" recursive</li>
+      <li><code>benchmark_slow → forEach → kernel_1 → forEach → kernel_2</code></li>
+      <li>Type information of inputs is not propagated during property access</li>
+    </ul>
+  </article>
+  </slide>
+
   <slide class="backdrop"></slide>
 
 </slides>
