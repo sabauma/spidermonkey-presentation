@@ -1,7 +1,7 @@
 var SLIDE_CONFIG = {
   // Slide settings
   settings: {
-    title: 'Faster Polymorphism in JavaScript',
+    title: 'Faster Polymorphism in SpiderMonkey',
     //subtitle: 'PhD Defense',
     eventInfo: {
       title: 'Mozill Intern Presentation',

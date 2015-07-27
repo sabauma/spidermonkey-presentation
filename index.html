@@ -68,13 +68,13 @@ URL: https://code.google.com/p/io-2012-slides
       <tr>
         <td width="95%" bgcolor="white">
       <pre class="prettyprint" data-lang="javascript">
-function benchmark_slow(outer) {
-  outer.forEach(function (inner) {
-    inner.forEach(function (value) {
-      curMax = Math.max(value, curMax);
-    });
-  });
-}
+    function benchmark_slow(outer) {
+      outer.forEach(function (inner) {
+        inner.forEach(function (value) {
+          curMax = Math.max(value, curMax);
+        });
+      });
+    }
       </pre>
       <span class="nocode">
         </td>
@@ -122,7 +122,7 @@ function benchmark_slow(outer) {
   <slide>
   <hgroup>
   <h2>What's going on?</h2>
-  <h3>Polymorhic code make spider monkey angry</h3>
+  <h3>Polymorphic code make spider monkey angry</h3>
   </hgroup>
   <article class="flexbox vcenter">
     <img src="images/happy-monkey.jpg" class="reflect" height=500 alt="Description" title="Happy Monkey">
@@ -321,6 +321,54 @@ function benchmark_slow(outer) {
   </slide>
 
   <slide>
+  <hgroup>
+  <h2>Do we win?</h2>
+  </hgroup>
+  <article>
+    <ul>
+      <li>
+        <input type="checkbox" checked="checked">All calls now fully inlined</input><p/>
+      </li>
+      <li>
+        <input type="checkbox" checked="checked">Types now specialized on calling context</input><p/>
+      </li>
+      <li>
+        <input type="checkbox" checked="checked">Benchmark code is now as fast as the manually duplicated version</input><p/>
+      </li>
+      <li>
+        <input type="checkbox" onchange="window.slidedeck.nextSlide()">Do we win?</input><p/>
+      </li>
+    </ul>
+    </span>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>What did we win?</h2>
+  </hgroup>
+  <article>
+    <center>
+      <h3>Disclaimer: most JS benchmarks don't use code like this</h3>
+    </center>
+    <table>
+      <tr> <td>Benchmark</td>         <td>Improvement</td> <td>Caused by</td> </tr>
+      <tr> <td>Sunspider 3d-cube</td> <td>~5%</td>         <td>Inlining</td> </tr>
+      <tr> <td>Dromeo 3d-cube</td>    <td>~43%</td>        <td>Type Refinement</td> </tr>
+      <tr> <td>Nested forEach</td>    <td>~56%</td>        <td>Inlining + Type Refinement</td> </tr>
+    </table>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Conclusion</h2>
+  </hgroup>
+  <article>
+    <ul>
+      <li> </li>
+    </ul>
+  </article>
   </slide>
 
   <slide class="backdrop"></slide>
