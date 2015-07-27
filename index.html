@@ -21,6 +21,10 @@ URL: https://code.google.com/p/io-2012-slides
   <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
   <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
   <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+  <script type="text/javascript" src="js/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </head>
 <body style="opacity: 0">
 
@@ -86,15 +90,15 @@ function benchmark_slow(outer) {
       <tr>
         <td width="95%" bgcolor="white">
       <pre class="prettyprint" data-lang="javascript">
-function benchmark_fast(outer) {
-  for (var i = 0; i &lt; outer.length; i++) {
-    var inner = outer[i];
-    for (var j = 0; j &lt; inner.length; j++) {
-      var value = inner[j];
-      curMax = Math.max(value, curMax);
+    function benchmark_fast(outer) {
+      for (var i = 0; i &lt; outer.length; i++) {
+        var inner = outer[i];
+        for (var j = 0; j &lt; inner.length; j++) {
+          var value = inner[j];
+          curMax = Math.max(value, curMax);
+        }
+      }
     }
-  }
-}
     </pre>
         <td bgcolor="white">
           <div class="measurement">
@@ -131,17 +135,17 @@ function benchmark_fast(outer) {
   </hgroup>
   <article>
     <pre class="prettyprint" data-lang="javascript">
-Array.protoype.forEach = function(<b>fun</b>) {
-  for (var i = 0; i &lt; this.length; i++)
-    <b>fun</b>(<b>this[i]</b>);
-}
+    Array.protoype.forEach = function(<b>fun</b>) {
+      for (var i = 0; i &lt; this.length; i++)
+        <b>fun</b>(<b>this[i]</b>);
+    }
 
-numbers.forEach(f);
+    numbers.forEach(f);
 
-cats.forEach(f);
-dogs.forEach(g);
-strings.forEach(h);
-vectors.forEach(k);
+    cats.forEach(f);
+    dogs.forEach(g);
+    strings.forEach(h);
+    vectors.forEach(k);
     </pre>
   </article>
   </slide>
@@ -153,19 +157,18 @@ vectors.forEach(k);
       <tr>
         <td width="95%" bgcolor="white">
       <pre class="prettyprint" data-lang="javascript">
-
-<b>
-Array.protoype.forEach2 = function(fun) {
-  for (var i = 0; i &lt; this.length; i++)
-    fun(this[i]);
-}</b>
-function benchmark_slow(outer) {
-  outer.<b>forEach</b>(function (inner) {
-    inner.<b>forEach2</b>(function (value) {
-      curMax = Math.max(value, curMax);
-    });
-  });
-}
+    <b>
+    Array.protoype.forEach2 = function(fun) {
+      for (var i = 0; i &lt; this.length; i++)
+        fun(this[i]);
+    }</b>
+    function benchmark_slow(outer) {
+      outer.<b>forEach</b>(function (inner) {
+        inner.<b>forEach2</b>(function (value) {
+          curMax = Math.max(value, curMax);
+        });
+      });
+    }
       </pre>
       <span class="nocode">
         </td>
@@ -191,6 +194,7 @@ function benchmark_slow(outer) {
     <ul>
       <li>No more function calls: <code>forEach</code> no longer appears recursive to the inliner</li>
       <li><code>benchmark_slow → forEach → kernel_1 → forEach → kernel_2</code></li>
+      <li><code>benchmark_slow → forEach → kernel_1 → forEach2 → kernel_2</code></li>
       <li>
         More precise type information: bodies of <code>forEach</code> and <code>forEach2</code>
         can have more precise type information
@@ -199,11 +203,138 @@ function benchmark_slow(outer) {
   </article>
   </slide>
 
+  <slide>
+  <hgroup>
+  <h2>Improvement 1: Better inlining</h2>
+  <h3>Factor in the inlining path</h3>
+  </hgroup>
+  <article>
+    <center>
+      Lets say we have a sequence of function calls leading up to <code>forEach</code>
+    </center>
+    <p>
+    <center>
+      <code>f → g → forEach → h → k → <font color="grey">forEach</font></code>
+    </center>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Improvement 1: Better inlining</h2>
+  <h3>Factor in the inlining path</h3>
+  </hgroup>
+  <article>
+    <center>
+      Lets say we have a sequence of function calls leading up to <code>forEach</code>
+    </center>
+    <p>
+    <center>
+      <code><font color="red">f → g</font> → forEach → <font color="blue">h → k</font> → <font color="grey">forEach</font></code>
+    </center>
+    <p>
+    <h3>New Heuristic</h3>
+    <ul>
+      <li>To inline function <code>F</code></li>
+      <li>Find all previous inlinings of <code>F</code></li>
+      <li>Compute the path for each inlining</li>
+      <li>Veto inlining if any path has a common prefix with the current path</li>
+    </ul>
+    <center>
+      <code><font color="red">f → g</font> → forEach → <font color="blue">h → k</font> → forEach</code>
+    </center>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>But we're still not faster</h2>
+  </hgroup>
+  <article>
+    <table>
+      <tr>
+        <td>
+          <ul>
+            <li>Some benchmarks are faster, just not this one</li>
+            <li>Inlined both calls</li>
+            <li>Code is now morally equivalent to for-loop version</li>
+          </ul>
+        </td>
+        <td width="50%">
+          <img src="images/angry-monkey.jpg" width=500>
+        </td>
+      </tr>
+    </table>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Bad type refinement</h2>
+  </hgroup>
+  <article>
+    <pre class="prettyprint" data-lang="javascript">
+    function benchmark_slow(outer) {
+      <b>outer.forEach</b>(function (inner) {
+        <b>inner.forEach</b>(function (value) {
+          curMax = Math.max(value, curMax);
+        });
+      });
+    }
+    </pre>
+    <center>
+      We inlined both calls to <code>forEach</code>, but we still generated
+      polymorphic code for each call.
+    </center>
+  </article>
+  </slide>
+
+  <slide>
+  <hgroup>
+  <h2>Refining element types</h2>
+  </hgroup>
+  <article>
+    <code>myArray : { Array&lt;Double&gt; } ⇒ myArray[i] : { Double }</code>
+    <p>
+    <center>
+      If <code>MyArray</code> has elements of type <code>Double</code>
+    </center>
+    <p/>
+    <p>
+    <code>myArray : { MyArray } ⇒ myArray[i] : { Double }</code>
+    <p>
+    <center>
+      More generally
+    </center>
+    <p/>
+    <p>
+    <code>myArray : { MyArray, Array&lt;Double&gt; } ⇒ myArray[i] : { Double }</code>
+
+    <center>
+      <h3>New rule for the type inferencer</h3>
+    </center>
+
+    <center>
+      $$ T_{a[i]} = \bigcup_{o \in T_{a}} \textrm{index}(o) $$
+    </center>
+  </article>
+  </slide>
+
+  <slide>
+  </slide>
+
   <slide class="backdrop"></slide>
 
 </slides>
 
 <script>
+
+function MyMax(a, b) {
+    if (a > b)
+        return a;
+    return b;
+}
+
 function benchmark(n, iters, f) {
   var outer = [];
   for (var i = 0; i < n; i++) {
@@ -236,8 +367,7 @@ benchs["arrayForEach"] = function arrayForEach(outer) {
   var max = -Infinity;
   outer.forEach(function (inner) {
     inner.forEach(function (v) {
-      if (v > max)
-        max = v;
+      max = MyMax(v, max);
     });
   });
 };
@@ -246,8 +376,7 @@ benchs["arrayForEachDup"] = function arrayForEachDup(outer) {
   var max = -Infinity;
   outer.myForEach(function (inner) {
     inner.myForEach2(function (v) {
-      if (v > max)
-        max = v;
+      max = MyMax(v, max);
     });
   });
 };
