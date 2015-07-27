@@ -193,11 +193,14 @@ URL: https://code.google.com/p/io-2012-slides
   <article>
     <ul>
       <li>No more function calls: <code>forEach</code> no longer appears recursive to the inliner</li>
-      <li><code>benchmark_slow → forEach → kernel_1 → forEach → kernel_2</code></li>
-      <li><code>benchmark_slow → forEach → kernel_1 → forEach2 → kernel_2</code></li>
+      <p>
+      <code>benchmark_slow → forEach → kernel_1 → forEach → kernel_2</code>
+      </p>
+      <p>
+      <code>benchmark_slow → forEach → kernel_1 → forEach2 → kernel_2</code>
+      </p>
       <li>
-        More precise type information: bodies of <code>forEach</code> and <code>forEach2</code>
-        can have more precise type information
+        The bodies of <code>forEach</code> and <code>forEach2</code> can have more precise type information
       </li>
     </ul>
   </article>
@@ -294,21 +297,21 @@ URL: https://code.google.com/p/io-2012-slides
   <h2>Refining element types</h2>
   </hgroup>
   <article>
-    <code>myArray : { Array&lt;Double&gt; } ⇒ myArray[i] : { Double }</code>
-    <p>
-    <center>
-      If <code>MyArray</code> has elements of type <code>Double</code>
-    </center>
-    <p/>
-    <p>
-    <code>myArray : { MyArray } ⇒ myArray[i] : { Double }</code>
-    <p>
-    <center>
-      More generally
-    </center>
-    <p/>
-    <p>
-    <code>myArray : { MyArray, Array&lt;Double&gt; } ⇒ myArray[i] : { Double }</code>
+    <table>
+      <tr><td>myArray</td><td>myArray[i]</td></tr>
+      <tr>
+        <td>{ Array&lt;Double&gt; }</td><td>{ Double }</td>
+      </tr>
+      <tr>
+        <td>{ MyArray }</td><td>{ Double }</td>
+      </tr>
+      <tr>
+        <td>{ Array&lt;Double&gt;, Array&lt;String&gt; }</td><td>{ Double, String }</td>
+      </tr>
+      <tr>
+        <td>{ Array&lt;Double&gt;, MyArray }</td><td>{ Double }</td>
+      </tr>
+    </table>
 
     <center>
       <h3>New rule for the type inferencer</h3>
@@ -366,9 +369,17 @@ URL: https://code.google.com/p/io-2012-slides
   </hgroup>
   <article>
     <ul>
-      <li> </li>
+      <li>Polymorphism can be made fast in many cases</li>
+      <li>This work has focused on making better use of existing type information</li>
+      <li>
+        Open question: can we track type information more precisely without incurring
+        significant runtime costs?
+      </li>
     </ul>
   </article>
+  <footer>
+    <h2>Thank You</h2>
+  </footer>
   </slide>
 
   <slide class="backdrop"></slide>
