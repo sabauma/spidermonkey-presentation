@@ -194,10 +194,10 @@ URL: https://code.google.com/p/io-2012-slides
     <ul>
       <li>No more function calls: <code>forEach</code> no longer appears recursive to the inliner</li>
       <p>
-      <code>benchmark_slow → forEach → kernel_1 → forEach → kernel_2</code>
+      <code>benchmark_slow → <font color="blue">forEach</font> → kernel_1 → <font color="blue">forEach</font> → kernel_2</code>
       </p>
       <p>
-      <code>benchmark_slow → forEach → kernel_1 → forEach2 → kernel_2</code>
+      <code>benchmark_slow → <font color="blue">forEach</font> → kernel_1 → <font color="red">forEach2</font> → kernel_2</code>
       </p>
       <li>
         The bodies of <code>forEach</code> and <code>forEach2</code> can have more precise type information

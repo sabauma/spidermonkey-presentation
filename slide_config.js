@@ -4,7 +4,7 @@ var SLIDE_CONFIG = {
     title: 'Faster Polymorphism in SpiderMonkey',
     //subtitle: 'PhD Defense',
     eventInfo: {
-      title: 'Mozill Intern Presentation',
+      title: 'Mozilla Intern Presentation',
       date: 'August 30, 2015'
     },
     useBuilds: true, // Default: true. False will turn off slide animation builds.
